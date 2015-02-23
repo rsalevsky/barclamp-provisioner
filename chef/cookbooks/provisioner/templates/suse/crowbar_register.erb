@@ -260,7 +260,15 @@ post_state() {
 # -----------------------
 
 MAC=$(cat /sys/class/net/$BOOTDEV/address)
+<% if node[:provisioner][:keep_hostname] -%>
+HOSTNAME=$(cat /etc/HOSTNAME)
+if ! echo "$HOSTNAME" | grep -q -o "\."; then
+  echo "The Hostname is not a fully qualified domain name."
+  exit 1
+fi
+<% else -%>
 HOSTNAME="d${MAC//:/-}.${DOMAIN}"
+<% end -%>
 sed -i -e "s/\(127\.0\.0\.1.*\)/127.0.0.1 $HOSTNAME ${HOSTNAME%%.*} localhost.localdomain localhost/" /etc/hosts
 echo "$HOSTNAME" > /etc/HOSTNAME
 hostname "$HOSTNAME"
