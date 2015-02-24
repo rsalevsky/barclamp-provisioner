@@ -210,7 +210,16 @@ fi
 
 # Copied from sledgehammer
 MAC=$(cat /sys/class/net/$BOOTDEV/address)
+<% if node[:provisioner][:keep_hostname] -%>
+HOSTNAME=$(cat /etc/HOSTNAME)
+if ! echo "$HOSTNAME" | grep -q -o "$DOMAIN$"; then
+  echo "The fully qualified domain name did not contain the cloud domain."
+  exit 1
+fi
+<% else -%>
 HOSTNAME="d${MAC//:/-}.${DOMAIN}"
+<% end -%>
+
 
 if get_node_allow_fail > /dev/null; then
   echo "This node seems to be already registered."
