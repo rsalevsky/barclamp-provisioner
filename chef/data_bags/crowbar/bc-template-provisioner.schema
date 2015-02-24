@@ -79,6 +79,7 @@
               "required": true,
               "mapping": {
                 "lease-time": { "type": "int", "required": true },
+                "for_unknown_nodes": { "type": "bool", "required": true },
                 "state_machine": {
                   "type": "map",
                   "required": true,

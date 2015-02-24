@@ -4,9 +4,11 @@ domain_name = node[:dns].nil? ? node[:domain] : (node[:dns][:domain] || node[:do
 admin_ip = Chef::Recipe::Barclamp::Inventory.get_network_by_type(node, "admin").address
 admin_net = node[:network][:networks]["admin"]
 lease_time = node[:provisioner][:dhcp]["lease-time"]
-pool_opts = {
-  "dhcp" => ['allow unknown-clients',
-             '      if option arch = 00:06 {
+
+pool_opts = {}
+if node[:provisioner][:dhcp]["for_unknown_nodes"]
+  pool_opts["dhcp"] = ['allow unknown-clients',
+                       'if option arch = 00:06 {
       filename = "discovery/bootia32.efi";
    } else if option arch = 00:07 {
       filename = "discovery/bootx64.efi";
@@ -15,9 +17,13 @@ pool_opts = {
    } else {
       filename = "discovery/pxelinux.0";
    }',
-             "next-server #{admin_ip}" ],
-  "host" => ['deny unknown-clients']
-}
+                       "next-server #{admin_ip}" ]
+else
+  pool_opts["dhcp"] = ['deny unknown-clients']
+end
+
+pool_opts["host"] = ['deny unknown-clients']
+
 dhcp_subnet admin_net["subnet"] do
   action :add
   network admin_net
